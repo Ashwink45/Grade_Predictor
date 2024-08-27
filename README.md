@@ -6,6 +6,7 @@ This repository implements a machine learning model using linear regression to p
 The given Features are selected on the basis of most influence on the result and prediction. Built with Python, it leverages robust libraries like pandas, NumPy, scikit-learn, and matplotlib.
 
 Key Features:
+The given Dataset is taken from Kaggle and all the credit belongs to then creator , i have just used this dataset so as to make my model functional 
 
 Data Preprocessing:
 Handles missing values (optional) using a mean imputer (adjustable strategy).

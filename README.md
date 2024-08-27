@@ -2,7 +2,8 @@ Title: Machine Learning for Student Performance Prediction (Linear Regression)
 
 Description:
 
-This repository implements a machine learning model using linear regression to predict student performance (final grade, G3) based on features like previous grades (G1, G2), study time, failures, and absences. Built with Python, it leverages robust libraries like pandas, NumPy, scikit-learn, and matplotlib.
+This repository implements a machine learning model using linear regression to predict student performance (final grade, G3) based on features like previous grades (G1, G2), study time, failures, and absences.
+The given Features are selected on the basis of most influence on the result and prediction. Built with Python, it leverages robust libraries like pandas, NumPy, scikit-learn, and matplotlib.
 
 Key Features:
 

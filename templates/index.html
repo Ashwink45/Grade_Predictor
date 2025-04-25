@@ -2,8 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Grade Prediction</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .prediction-card {
+            transition: all 0.3s ease;
+        }
+        .error-card {
+            border-left: 5px solid #dc3545;
+        }
+        .success-card {
+            border-left: 5px solid #28a745;
+        }
+    </style>
 </head>
 <body class="bg-light">
 
@@ -13,47 +25,98 @@
                 <div class="card shadow-sm rounded-4">
                     <div class="card-body p-4">
                         <h2 class="card-title text-center mb-4">🎓 Student Grade Predictor</h2>
-
-                        <form method="POST">
+                        
+                        <!-- Form with explicit action -->
+                        <form action="{{ url_for('predict') }}" method="POST">
                             <div class="mb-3">
                                 <label for="G1" class="form-label">G1 (First Period Grade)</label>
-                                <input type="number" step="0.1" class="form-control" name="G1" required>
+                                <input type="number" step="0.1" class="form-control" 
+                                       name="G1" min="0" max="20" required>
                             </div>
+                            
                             <div class="mb-3">
                                 <label for="G2" class="form-label">G2 (Second Period Grade)</label>
-                                <input type="number" step="0.1" class="form-control" name="G2" required>
+                                <input type="number" step="0.1" class="form-control" 
+                                       name="G2" min="0" max="20" required>
                             </div>
+                            
                             <div class="mb-3">
                                 <label for="studytime" class="form-label">Study Time (1-4)</label>
                                 <select class="form-select" name="studytime" required>
+                                    <option value="" disabled selected>Select study time</option>
                                     <option value="1">1 - &lt; 2 hours</option>
                                     <option value="2">2 - 2 to 5 hours</option>
                                     <option value="3">3 - 5 to 10 hours</option>
                                     <option value="4">4 - &gt; 10 hours</option>
                                 </select>
                             </div>
+                            
                             <div class="mb-3">
-                                <label for="failures" class="form-label">Failures (0-3, else 4)</label>
-                                <input type="number" class="form-control" name="failures" min="0" max="4" required>
+                                <label for="failures" class="form-label">Past Class Failures</label>
+                                <select class="form-select" name="failures" required>
+                                    <option value="" disabled selected>Select number of failures</option>
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4+</option>
+                                </select>
                             </div>
+                            
                             <div class="mb-3">
                                 <label for="absences" class="form-label">Absences (0-93)</label>
-                                <input type="number" class="form-control" name="absences" min="0" max="93" required>
+                                <input type="number" class="form-control" 
+                                       name="absences" min="0" max="93" required>
                             </div>
 
-                            <button type="submit" class="btn btn-primary w-100">Predict Grade</button>
+                            <button type="submit" class="btn btn-primary w-100 py-2">
+                                Predict Final Grade
+                            </button>
                         </form>
 
-                        {% if prediction is not none %}
-                            <div class="alert alert-success mt-4 text-center">
-                                <strong>Predicted Final Grade (G3):</strong> {{ prediction }}
+                        <!-- Enhanced prediction display -->
+                        {% if prediction %}
+                            <div class="prediction-card mt-4 p-3 rounded {% if error %}alert-danger error-card{% else %}alert-success success-card{% endif %}">
+                                <h5 class="mb-0 text-center">
+                                    {% if error %}
+                                        ⚠️ {{ prediction }}
+                                    {% else %}
+                                        ✅ Predicted Final Grade (G3): {{ prediction }}
+                                    {% endif %}
+                                </h5>
                             </div>
                         {% endif %}
                     </div>
+                </div>
+                
+                <div class="text-center mt-3 text-muted small">
+                    <p>Note: Predictions are based on machine learning models</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Client-side validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const inputs = this.querySelectorAll('input[required], select[required]');
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                if (!input.value) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please fill all required fields!');
+            }
+        });
+    </script>
 </body>
 </html>

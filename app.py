@@ -1,56 +1,73 @@
+import os
 from flask import Flask, render_template, request
 import pandas as pd
-import numpy as np
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import MinMaxScaler
 import joblib
+from werkzeug.utils import secure_filename
 
 # Initialize Flask app
 app = Flask(__name__)
 
-# Load your pre-trained model and scaler
-model = joblib.load('grade_predictor_model.pkl')  # Assuming you've saved your model as model.pkl
-scaler = joblib.load('scaler.pkl')  # Assuming you've saved your scaler as scaler.pkl
+# Configuration
+MODEL_PATH = 'grade_predictor_model.pkl'
+SCALER_PATH = 'scaler.pkl'
+FEATURES_TO_NORMALIZE = ["failures", "G1", "G2", "absences"]
 
-# Define features to normalize
-features_to_normalize = ["failures", "G1", "G2", "absences"]
+# Load model and scaler with error handling
+def load_assets():
+    try:
+        model = joblib.load(MODEL_PATH)
+        scaler = joblib.load(SCALER_PATH)
+        print("Model and scaler loaded successfully!")
+        return model, scaler
+    except Exception as e:
+        print(f"Error loading model/scaler: {str(e)}")
+        return None, None
 
-# Route for the homepage
+model, scaler = load_assets()
+
 @app.route('/')
 def home():
     return render_template('index.html')
 
-# Route to handle form submission and prediction
 @app.route('/predict', methods=['POST'])
 def predict():
+    # Early return if model/scaler not loaded
+    if model is None or scaler is None:
+        return render_template('index.html', 
+                            prediction="System error: Model not loaded properly",
+                            error=True)
+
     try:
-        # Get input values from the form
-        G1 = int(request.form['G1'])
-        G2 = int(request.form['G2'])
-        studytime = int(request.form['studytime'])
-        failures = int(request.form['failures'])
-        absences = int(request.form['absences'])
+        # Validate and convert form inputs
+        form_data = {
+            'G1': float(request.form.get('G1', 0)),
+            'G2': float(request.form.get('G2', 0)),
+            'studytime': float(request.form.get('studytime', 0)),
+            'failures': float(request.form.get('failures', 0)),
+            'absences': float(request.form.get('absences', 0))
+        }
 
-        # Prepare input data for prediction
-        input_data = pd.DataFrame([{
-            "G1": G1,
-            "G2": G2,
-            "studytime": studytime,
-            "failures": failures,
-            "absences": absences
-        }])
+        # Create DataFrame and normalize features
+        input_df = pd.DataFrame([form_data])
+        input_df[FEATURES_TO_NORMALIZE] = scaler.transform(input_df[FEATURES_TO_NORMALIZE])
 
-        # Normalize the input data
-        input_data[features_to_normalize] = scaler.transform(input_data[features_to_normalize])
-
-        # Predict the grade using the loaded model
-        predicted_grade = model.predict(input_data)[0]
+        # Make prediction
+        prediction = model.predict(input_df)[0]
         
-        # Display the result
-        return render_template('index.html', prediction=f'{predicted_grade:.2f}')
-    except Exception as e:
-        return render_template('index.html', prediction=f'Error: {str(e)}')
+        return render_template('index.html', 
+                            prediction=f'Predicted Grade: {prediction:.2f}',
+                            error=False)
 
-# Run the app
+    except ValueError as e:
+        return render_template('index.html',
+                            prediction=f'Invalid input: {str(e)}',
+                            error=True)
+    except Exception as e:
+        return render_template('index.html',
+                            prediction=f'Prediction failed: {str(e)}',
+                            error=True)
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', 
+           port=int(os.environ.get('PORT', 5000)), 
+           debug=os.environ.get('DEBUG', True))

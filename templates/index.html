@@ -75,17 +75,53 @@
                         </form>
 
                         <!-- Enhanced prediction display -->
-                        {% if prediction %}
-                            <div class="prediction-card mt-4 p-3 rounded {% if error %}alert-danger error-card{% else %}alert-success success-card{% endif %}">
-                                <h5 class="mb-0 text-center">
-                                    {% if error %}
-                                        ⚠️ {{ prediction }}
-                                    {% else %}
-                                        ✅ Predicted Final Grade (G3): {{ prediction }}
-                                    {% endif %}
-                                </h5>
-                            </div>
+                        {% if error %}
+    <div class="prediction-card mt-4 p-3 rounded alert-danger error-card">
+        <h5 class="mb-0 text-center">
+            ⚠️ {{ message }}
+        </h5>
+    </div>
+{% endif %}
+
+{% if baseline %}
+    <!-- Baseline Prediction -->
+    <div class="prediction-card mt-4 p-3 rounded alert-success success-card">
+        <h5 class="mb-0 text-center">
+            ✅ Predicted Final Grade (G3): <strong>{{ baseline }}</strong>
+        </h5>
+    </div>
+
+    <!-- What-If Results -->
+    <div class="mt-4">
+        <h5 class="text-center mb-3">📊 What-If Simulation Results</h5>
+
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Scenario</th>
+                    <th>Improvement</th>
+                    <th>New Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in what_if_results %}
+                <tr>
+                    <td>{{ r.scenario }}</td>
+                    <td>
+                        {% if r.improvement >= 0 %}
+                            <span class="text-success">+{{ r.improvement }}</span>
+                        {% else %}
+                            <span class="text-danger">{{ r.improvement }}</span>
                         {% endif %}
+                    </td>
+                    <td>{{ r.new_grade }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
                     </div>
                 </div>
                 
